@@ -26,7 +26,7 @@ let makeHTMLReq = (url, page) => new Promise((resolve, reject) => {
     })
 })
 
-ctrl.genClientHTML = (data) => `
+let genClientHTML = (data) => `
     <!DOCTYPE html>
     <html>
         <head></head>
@@ -38,7 +38,7 @@ ctrl.genClientHTML = (data) => `
     </html>
 `
 
-ctrl.processJSON = (html) => {
+let processJSON = (html) => {
     const dom = new jsdom(html);
     const document = dom.window.document;
 
@@ -64,7 +64,7 @@ ctrl.processJSON = (html) => {
 
 let preScrapper = (...args) => new Promise(resolve => {
     makeHTMLReq(...args).then(html => {
-        let result = ctrl.processJSON(html);
+        let result = processJSON(html);
         resolve(result);
     })
 })
@@ -76,7 +76,7 @@ ctrl.scrapeFrontpage = (cb) => {
     }
     Promise.all(promises).then(data => {
 
-        const responseHTML = ctrl.genClientHTML([].concat(...data));
+        const responseHTML = genClientHTML([].concat(...data));
         cb(responseHTML);
     })
 }
