@@ -91,12 +91,6 @@ ctrl.scrapeFrontpage = (cb) => {
         const responseHTML = ctrl.genClientHTML(images);
 
         cb(responseHTML);
-        // cb(html2);
-
-        // console.log('responseHTML is: ', responseHTML);
-
-        // cb(html.match(/\<img src\=\"[^\"]+\"/g))
-        // cb(responseHTML);
     })
 }
 
