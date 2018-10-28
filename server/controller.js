@@ -1,5 +1,4 @@
 
-// const https = require('https');
 const request = require('request');
 // request.debug = true;
 const jsdom = require('jsdom').JSDOM;
@@ -25,18 +24,6 @@ let makeHTMLReq = (url, page) => new Promise((resolve, reject) => {
         }
     })
 })
-
-// let makeHTMLReqv2 = (url) => new Promise((resolve, reject) => {
-//     const dom = (new jsdom.JSDOM(`<!--scripts go here-->`, {
-//         url: url,
-//         referrer: url,
-//         contentType: "text/html",
-//         includeNodeLocations: true,
-//         // storageQuota: 50000000
-//     })).window.document
-//     console.log('document is: ', dom);
-//     resolve(dom);
-// })
 
 ctrl.genClientHTML = (data) => `
     <!DOCTYPE html>
@@ -73,13 +60,6 @@ ctrl.processJSON = (html) => {
     })
 
     return result;
-
-    // return Array.from(document.getElementsByClassName('id3')).map(elem => {
-    //     return {
-    //         image: elem.children.item(0).children.item(0).src,
-    //         href: elem.children.item(0).href,
-    //     }
-    // });
 }
 
 ctrl.scrapeFrontpage = (cb) => {
