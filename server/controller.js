@@ -1,7 +1,7 @@
 
 // const https = require('https');
 const request = require('request');
-request.debug = true;
+// request.debug = true;
 const jsdom = require('jsdom').JSDOM;
 
 
@@ -54,22 +54,49 @@ ctrl.processJSON = (html) => {
     const dom = new jsdom(html);
     const document = dom.window.document;
 
-    return Array.from(document.getElementsByClassName('id3')).map(elem => {
-        return {
-            image: elem.children.item(0).children.item(0).src,
-            href: elem.children.item(0).href,
+    let result = [];
+
+    Array.from(document.getElementsByClassName('itd')).forEach((elem, i) => {
+        if(
+            typeof elem.getElementsByClassName('it2')[0] !== 'undefined' && 
+            typeof elem.getElementsByClassName('it5')[0] !== 'undefined'
+        ){
+            let image_div = elem.getElementsByClassName('it2')[0];
+            let key = image_div.innerHTML.split('~', 4);
+            let proto = key[0] == 'init' ? 'http' : 'https';
+    
+            result.push({
+                image: `${proto}://${key[1]}/${key[2]}`,
+                href: elem.getElementsByClassName('it5')[0].children[0].href
+            })
         }
-    });
+    })
+
+    return result;
+
+    // return Array.from(document.getElementsByClassName('id3')).map(elem => {
+    //     return {
+    //         image: elem.children.item(0).children.item(0).src,
+    //         href: elem.children.item(0).href,
+    //     }
+    // });
 }
 
 ctrl.scrapeFrontpage = (cb) => {
-    makeHTMLReq(process.env.ROOT).then(html => {
+    makeHTMLReq(process.env.ROOT, 5).then(html => {
+
+        const html2 = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
 
         const images = ctrl.processJSON(html);
         const responseHTML = ctrl.genClientHTML(images);
-        // console.log('responseHTML is: ', responseHTML);
 
         cb(responseHTML);
+        // cb(html2);
+
+        // console.log('responseHTML is: ', responseHTML);
+
+        // cb(html.match(/\<img src\=\"[^\"]+\"/g))
+        // cb(responseHTML);
     })
 }
 
