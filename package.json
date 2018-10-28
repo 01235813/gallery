@@ -1,0 +1,18 @@
+{
+  "name": "eh-express",
+  "version": "1.0.0",
+  "description": "html scrapper for personal use only",
+  "main": "server/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server"
+  },
+  "author": "Myself",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.4"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.5"
+  }
+}
