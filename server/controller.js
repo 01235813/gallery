@@ -58,18 +58,24 @@ ctrl.processJSON = (html) => {
             })
         }
     })
-
     return result;
 }
 
+let preScrapper = (...args) => new Promise(resolve => {
+    makeHTMLReq(...args).then(html => {
+        let result = ctrl.processJSON(html);
+        resolve(result);
+    })
+})
+
 ctrl.scrapeFrontpage = (cb) => {
-    makeHTMLReq(process.env.ROOT, 5).then(html => {
+    promises = [preScrapper(process.env.ROOT)]
+    for(let i = 1; i < 101; i++){
+        promises.push(preScrapper(process.env.ROOT, i))
+    }
+    Promise.all(promises).then(data => {
 
-        const html2 = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-
-        const images = ctrl.processJSON(html);
-        const responseHTML = ctrl.genClientHTML(images);
-
+        const responseHTML = ctrl.genClientHTML([].concat(...data));
         cb(responseHTML);
     })
 }
