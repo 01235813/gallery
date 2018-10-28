@@ -2,6 +2,7 @@
 const request = require('request');
 // request.debug = true;
 const jsdom = require('jsdom').JSDOM;
+const queries = require('./config.json').queries;
 
 
 
@@ -12,10 +13,10 @@ let makeHTMLReq = (url, page) => new Promise((resolve, reject) => {
         throw new Error('env.URL is not a string');
     }
 
-    let requestObj = { url };
-    if(page) requestObj.qs = { page };
+    let requestObj = { url, qs: queries };
+    if(page) requestObj.qs.page = page;
     
-    console.log('requestion from: ', requestObj)
+    console.log('requestion from: ', requestObj.url + ' | page: ', page);
 
     request.get(requestObj, (err, response, body) => {
         if(err) reject(err);
