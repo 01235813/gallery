@@ -22,14 +22,19 @@ svc.frontPage = (document) => new Promise(resolve => {
             })
         }
     });
-    return result;
+    resolve(result);
 })
 
-svc.articlePage = (document) => new Promise({
+svc.articlePage = (document) => new Promise(resolve => {
     
+    let promises = [];
+
+    // promises = Array.from(document.getElementsByClassName('gdtm')).map(elem => {
+
+    // })
 })
 
-svc.galleryPage = (document) => new Promise({
+svc.galleryPage = (document) => new Promise(resolve => {
     
 })
 
