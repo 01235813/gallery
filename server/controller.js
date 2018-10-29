@@ -7,7 +7,7 @@ const queries = require('./config').queries;
 
 ctrl = {};
 
-let makeHTMLReq = (url, page=0) => new Promise((resolve, reject) => {
+let makeReq = (url, page=0) => new Promise((resolve, reject) => {
     if(typeof url !== 'string'){
         throw new Error('env.URL is not a string');
     }
@@ -25,6 +25,8 @@ let makeHTMLReq = (url, page=0) => new Promise((resolve, reject) => {
     })
 })
 
+let wrapDOM = (req) => new jsdom(req).window.document
+
 let genClientHTML = (data) => `
     <!DOCTYPE html>
     <html>
@@ -38,10 +40,8 @@ let genClientHTML = (data) => `
 `
 
 let getJSON = {
-    frontpage: (html) => {
-        const dom = new jsdom(html);
-        const document = dom.window.document;
-
+    frontPage: (document) => {
+        
         let result = [];
 
         Array.from(document.getElementsByClassName('itd')).forEach((elem, i) => {
@@ -60,6 +60,9 @@ let getJSON = {
             }
         });
         return result;
+    },
+    articlePage: (html) => {
+
     }
 }
 
@@ -67,8 +70,8 @@ ctrl.preScrapper = (option, req, res) => new Promise(resolve => {
 
     let helper = (...args) => new Promise(resolve => {
         let processJSON = getJSON[option];
-        makeHTMLReq(...args).then(html => {
-            let result = processJSON(html);
+        makeReq(...args).then(body => {
+            let result = processJSON(wrapDOM(body));
             resolve(result);
         })
     })
@@ -77,37 +80,19 @@ ctrl.preScrapper = (option, req, res) => new Promise(resolve => {
     for(let i = 1; i < process.env.PAGES; i++){
         promises.push(helper(process.env.ROOT + req.url, i))
     }
-    
+
     Promise.all(promises).then(data => {
         const responseHTML = genClientHTML([].concat(...data));
         resolve(responseHTML);
     });
 });
 
-ctrl.frontPage = (req, res) => {
+ctrl.requester = (option) => (req, res) => {
     console.log('url = ', req.url);
-    ctrl.preScrapper('frontpage', req, res).then(data => {
+    ctrl.preScrapper(option, req, res).then(data => {
         res.status(200).send(data)
     })
 }
-
-ctrl.articlePage = (req, res) => {
-    console.log('url = ', req.url);
-    ctrl.preScrapper('frontpage', req, res).then(data => {
-        res.status(200).send(data)
-    })
-}
-
-ctrl.galleryPage = (req, res) => {
-    console.log('url = ', req.url);
-    ctrl.preScrapper('frontpage', req, res).then(data => {
-        res.status(200).send(data)
-    })
-}
-
-
-
-
 
 
 module.exports = ctrl;
