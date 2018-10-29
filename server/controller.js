@@ -4,6 +4,8 @@
 const request = require('request');
 // request.debug = true;
 const jsdom = require('jsdom').JSDOM;
+
+const scrapperSvc = require('./scrapperSvc');
 const queries = require('./config').queries;
 
 
@@ -41,37 +43,10 @@ let genClientHTML = (data) => `
     </html>
 `
 
-let getJSON = {
-    frontPage: (document) => {
-
-        let result = [];
-
-        Array.from(document.getElementsByClassName('itd')).forEach((elem, i) => {
-            if(
-                typeof elem.getElementsByClassName('it2')[0] !== 'undefined' && 
-                typeof elem.getElementsByClassName('it5')[0] !== 'undefined'
-            ){
-                let image_div = elem.getElementsByClassName('it2')[0];
-                let key = image_div.innerHTML.split('~', 4);
-                let proto = key[0] == 'init' ? 'http' : 'https';
-        
-                result.push({
-                    image: `${proto}://${key[1]}/${key[2]}`,
-                    href: elem.getElementsByClassName('it5')[0].children[0].href
-                })
-            }
-        });
-        return result;
-    },
-    articlePage: (html) => {
-
-    }
-}
-
 ctrl.preScrapper = (option, req, res) => new Promise(resolve => {
 
     let helper = (...args) => new Promise(resolve => {
-        let processJSON = getJSON[option];
+        let processJSON = scrapperSvc[option];
         makeReq(...args).then(body => {
             let result = processJSON(wrapDOM(body));
             resolve(result);
