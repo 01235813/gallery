@@ -2,3 +2,4 @@ node_modules
 content
 .env
 server/config.json
+server/config.js
