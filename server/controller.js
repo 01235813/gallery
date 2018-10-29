@@ -63,23 +63,22 @@ let getJSON = {
     }
 }
 
-let scrapper = (option, ...args) => new Promise(resolve => {
-    let processJSON = getJSON[option];
-    makeHTMLReq(...args).then(html => {
-        let result = processJSON(html);
-        resolve(result);
+ctrl.preScrapper = (option, req, res) => new Promise(resolve => {
+
+    let helper = (...args) => new Promise(resolve => {
+        let processJSON = getJSON[option];
+        makeHTMLReq(...args).then(html => {
+            let result = processJSON(html);
+            resolve(result);
+        })
     })
-})
 
-ctrl.preScrapper = (req, res) => new Promise(resolve => {
-    let option = 'frontpage';
-
-    promises = [scrapper(option, process.env.ROOT + req.url)]
+    promises = [helper(process.env.ROOT + req.url)]
     for(let i = 1; i < process.env.PAGES; i++){
-        promises.push(scrapper(option, process.env.ROOT + req.url, i))
+        promises.push(helper(process.env.ROOT + req.url, i))
     }
+    
     Promise.all(promises).then(data => {
-
         const responseHTML = genClientHTML([].concat(...data));
         resolve(responseHTML);
     });
@@ -87,19 +86,23 @@ ctrl.preScrapper = (req, res) => new Promise(resolve => {
 
 ctrl.frontPage = (req, res) => {
     console.log('url = ', req.url);
-    // res.status(200).send('ok');
-
-    ctrl.preScrapper(req, res).then(data => {
+    ctrl.preScrapper('frontpage', req, res).then(data => {
         res.status(200).send(data)
     })
 }
 
 ctrl.articlePage = (req, res) => {
-    res.status(200).send('ok')
+    console.log('url = ', req.url);
+    ctrl.preScrapper('frontpage', req, res).then(data => {
+        res.status(200).send(data)
+    })
 }
 
 ctrl.galleryPage = (req, res) => {
-
+    console.log('url = ', req.url);
+    ctrl.preScrapper('frontpage', req, res).then(data => {
+        res.status(200).send(data)
+    })
 }
 
 
