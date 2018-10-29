@@ -1,11 +1,13 @@
 
+'use strict'
+
 const request = require('request');
 // request.debug = true;
 const jsdom = require('jsdom').JSDOM;
 const queries = require('./config').queries;
 
 
-ctrl = {};
+let ctrl = {};
 
 let makeReq = (url, page=0) => new Promise((resolve, reject) => {
     if(typeof url !== 'string'){
@@ -41,7 +43,7 @@ let genClientHTML = (data) => `
 
 let getJSON = {
     frontPage: (document) => {
-        
+
         let result = [];
 
         Array.from(document.getElementsByClassName('itd')).forEach((elem, i) => {
@@ -76,9 +78,9 @@ ctrl.preScrapper = (option, req, res) => new Promise(resolve => {
         })
     })
 
-    promises = [helper(process.env.ROOT + req.url)]
-    for(let i = 1; i < process.env.PAGES; i++){
-        promises.push(helper(process.env.ROOT + req.url, i))
+    let promises = [];
+    for(let i = 0; i < process.env.PAGES; i++){
+        promises.push(helper(process.env.ROOT + req.url, i));
     }
 
     Promise.all(promises).then(data => {
