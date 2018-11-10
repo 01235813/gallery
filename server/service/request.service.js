@@ -12,10 +12,11 @@ svc.get = (url, queries={}) => new Promise((resolve, reject) => {
     }
 
     let requestObj = { url, qs: queries };
-
     request.get(requestObj, (err, response, body) => {
-        if(err) reject(err);
-        else {
+        if(err) {
+            console.error(err);
+            reject(err);
+        } else {
             resolve(body);
         }
     })
@@ -23,7 +24,7 @@ svc.get = (url, queries={}) => new Promise((resolve, reject) => {
 
 svc.getDOC = (url, queries={}) => new Promise((resolve, reject) => {
     let wrapDOM = (req) => new jsdom(req).window.document
-    svc.get(url, queries).then(body => wrapDOM(body)).then(resolve);
+    svc.get(url, queries).then(body => wrapDOM(body)).then(resolve).catch(reject);
 })
 
 module.exports = svc;

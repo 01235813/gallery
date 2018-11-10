@@ -25,13 +25,13 @@ let genClientHTML = (data) => `
     </html>
 `
 
-ctrl.preScrapper = (option, req, res) => new Promise(resolve => {
+ctrl.preScrapper = (option, req, res) => new Promise((resolve, reject) => {
 
     let queries = { ...config[option] }
 
-    let helper = (...args) => new Promise(resolve => {
+    let helper = (...args) => new Promise((resolve, reject) => {
         let processJSON = scrapperSvc[option];
-        request.get(...args).then(body => processJSON(wrapDOM(body)).then(resolve))
+        request.get(...args).then(body => processJSON(wrapDOM(body)).then(resolve).catch(reject))
     })
 
     let promises = [];
@@ -42,7 +42,7 @@ ctrl.preScrapper = (option, req, res) => new Promise(resolve => {
     Promise.all(promises).then(data => {
         const responseHTML = genClientHTML([].concat(...data));
         resolve(responseHTML);
-    });
+    }).catch(reject);
 });
 
 ctrl.requester = (option) => (req, res) => {
@@ -50,7 +50,7 @@ ctrl.requester = (option) => (req, res) => {
     const DEBUG = process.env.VIEW == 'html';
 
     if(DEBUG){
-        makeReq(process.env.ROOT + req.url).then(data => {
+        request(process.env.ROOT + req.url).then(data => {
             data = data.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
             res.status(200).send(data);
         })

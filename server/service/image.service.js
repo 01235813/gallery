@@ -22,7 +22,7 @@ svc.localToWeb = (pathName) => process.env.DOMAIN + '/' + pathName;
 
 svc.resolveFileName = (filename) => "public/images/" + filename;
 
-svc.downloadImage = (uri, savePath) => new Promise(resolve => {
+svc.downloadImage = (uri, savePath) => new Promise((resolve, reject) => {
     if (fs.existsSync(savePath)){
         resolve('history')
     } else {
@@ -33,7 +33,7 @@ svc.downloadImage = (uri, savePath) => new Promise(resolve => {
                     console.log('done: ', savePath);
                     resolve('saved');
                 })
-                .on('error', console.error);
+                .on('error', reject);
         });
         
     }

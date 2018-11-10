@@ -28,7 +28,7 @@ svc.frontPage = (document) => new Promise(resolve => {
     resolve(result);
 })
 
-svc.articlePage = (document) => new Promise(resolve => {
+svc.articlePage = (document) => new Promise((resolve, reject) => {
     let first_image = document.getElementsByClassName('gdtm')[0].getElementsByTagName('a')[0].href;
     let gallery = {
         id: first_image.split('.org')[1].split('/')[3].split('-')[0], //a bit messy but can't be bothered to pass the req object to fetch id
@@ -38,31 +38,33 @@ svc.articlePage = (document) => new Promise(resolve => {
     let imagePromises = [];
 
     console.log('first image href is: ', first_image);
+    let getHref = (document) => document.getElementById('next').href;
 
-    let getHref = (document) => document.getElementById('next').href
-    let getNextImage = (href, page = 1) => new Promise(resolve => {
-
+    let getNextImage = (href, page = 1) => new Promise(async (resolve, reject) => {
         console.log('getting next page: ', href);
-        request.getDOC(href).then(document => {
-            let id = href.split('.org')[1].split('/')[2]
-            let new_href = getHref(document);
-            let image = document.getElementById('img').src;
-            let ext = image.match(/\.[a-z]{3,4}/)[0]
+        let document = await request.getDOC(href);
 
-            if (href == new_href) resolve(result);
-            else {
-                let local_image = imageSvc.resolveFileName(gallery.id + '/' + page + '-' + id + ext);
-                // console.log('local_image is: ', local_image);
-                imagePromises.push(imageSvc.downloadImage(image, local_image))
-                result.push({ image: imageSvc.localToWeb(local_image) });
-                page++;
-                getNextImage(new_href, page).then(resolve);
-            }
-        })
+        let loadfail = document.getElementById('loadfail').href;
+        if((/https?:\/\//).test(loadfail)) document = await request.getDOC(loadfail)
+
+        let id = href.split(process.env.ROOT)[1].split('/')[1]
+        let new_href = getHref(document);
+        let image = document.getElementById('img').src;
+        let ext = image.match(/\.[a-z]{3,4}$/)[0]
+
+        if (href == new_href) resolve(result);
+        else {
+            let local_image = imageSvc.resolveFileName(gallery.id + '/' + page + '-' + id + ext);
+            imagePromises.push(imageSvc.downloadImage(image, local_image))
+            result.push({ image: imageSvc.localToWeb(local_image) });
+            page++;
+            getNextImage(new_href, page).then(resolve).catch(reject);
+        }
     });
+
     getNextImage(first_image).then(() => {
         console.log('imagePromises are: ', imagePromises);
-        Promise.all(imagePromises).then(() => resolve(result));
+        Promise.all(imagePromises).then(() => resolve(result)).catch(reject);
     });
 })
 
