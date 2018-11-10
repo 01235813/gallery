@@ -5,10 +5,8 @@ const path = require('path');
 const request = require('request');
 
 let svc = {};
-let emptyFunc = () => null;
-let handleWinPath = (pathname) => pathname.replace(new RegExp('\\' + path.sep, 'g'), '/');
 
-let manageDir = (filename) => {
+let handleDir = (filename) => {
     let directory = filename.match(/.*\//)[0];
     directory.split('/').map((elem, i) => {
         if(i == 0) return;
@@ -20,15 +18,25 @@ let manageDir = (filename) => {
     })
 }
 
-svc.downloadImage = (uri, filename, callback = emptyFunc) => {
-    let savePath = "content/images/" + filename;
-    manageDir(savePath);
-    request.head(uri, function(err, res, body){
-        request(uri).pipe(fs.createWriteStream(savePath)).on('close', callback);
-    });
-};
+svc.localToWeb = (pathName) => process.env.DOMAIN + '/' + pathName;
 
+svc.resolveFileName = (filename) => "public/images/" + filename;
 
-// console.log('pathname here is: ', path.join(__dirname + '/../content/images/'));
+svc.downloadImage = (uri, savePath) => new Promise(resolve => {
+    if (fs.existsSync(savePath)){
+        resolve('history')
+    } else {
+        handleDir(savePath);
+        request.head(uri, function(err, res, body){
+            request(uri).pipe(fs.createWriteStream(savePath))
+                .on('close', () => {
+                    console.log('done: ', savePath);
+                    resolve('saved');
+                })
+                .on('error', console.error);
+        });
+        
+    }
+});
 
 module.exports = svc;

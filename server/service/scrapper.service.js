@@ -34,11 +34,13 @@ svc.articlePage = (document) => new Promise(resolve => {
         id: first_image.split('.org')[1].split('/')[3].split('-')[0], //a bit messy but can't be bothered to pass the req object to fetch id
         name: document.getElementById('gn').innerHTML,
     }
+    let result = [];
+    let imagePromises = [];
 
     console.log('first image href is: ', first_image);
 
     let getHref = (document) => document.getElementById('next').href
-    let getNextImage = (href, result = [], page = 1) => new Promise(resolve => {
+    let getNextImage = (href, page = 1) => new Promise(resolve => {
 
         console.log('getting next page: ', href);
         request.getDOC(href).then(document => {
@@ -47,16 +49,21 @@ svc.articlePage = (document) => new Promise(resolve => {
             let image = document.getElementById('img').src;
             let ext = image.match(/\.[a-z]{3,4}/)[0]
 
-            imageSvc.downloadImage(image, gallery.id + '/' + page + '-' + id + ext);
-            result.push({ image });
             if (href == new_href) resolve(result);
             else {
+                let local_image = imageSvc.resolveFileName(gallery.id + '/' + page + '-' + id + ext);
+                // console.log('local_image is: ', local_image);
+                imagePromises.push(imageSvc.downloadImage(image, local_image))
+                result.push({ image: imageSvc.localToWeb(local_image) });
                 page++;
-                getNextImage(new_href, result, page).then(resolve);
+                getNextImage(new_href, page).then(resolve);
             }
         })
     });
-    getNextImage(first_image).then(resolve);
+    getNextImage(first_image).then(() => {
+        console.log('imagePromises are: ', imagePromises);
+        Promise.all(imagePromises).then(() => resolve(result));
+    });
 })
 
 svc.galleryPage = (document) => new Promise(resolve => {
