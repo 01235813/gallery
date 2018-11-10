@@ -2,6 +2,7 @@
 'use strict'
 
 const request = require('./request.service');
+const imageSvc = require('./image.service');
 
 let svc = {};
 
@@ -29,18 +30,29 @@ svc.frontPage = (document) => new Promise(resolve => {
 
 svc.articlePage = (document) => new Promise(resolve => {
     let first_image = document.getElementsByClassName('gdtm')[0].getElementsByTagName('a')[0].href;
+    let gallery = {
+        id: first_image.split('.org')[1].split('/')[3].split('-')[0], //a bit messy but can't be bothered to pass the req object to fetch id
+        name: document.getElementById('gn').innerHTML,
+    }
+
     console.log('first image href is: ', first_image);
 
     let getHref = (document) => document.getElementById('next').href
-    let getNextImage = (href, result = []) => new Promise(resolve => {
+    let getNextImage = (href, result = [], page = 1) => new Promise(resolve => {
+
         console.log('getting next page: ', href);
         request.getDOC(href).then(document => {
+            let id = href.split('.org')[1].split('/')[2]
             let new_href = getHref(document);
-            let image = document.getElementById('img').src
+            let image = document.getElementById('img').src;
+            let ext = image.match(/\.[a-z]{3,4}/)[0]
+
+            imageSvc.downloadImage(image, gallery.id + '/' + page + '-' + id + ext);
             result.push({ image });
             if (href == new_href) resolve(result);
             else {
-                getNextImage(new_href, result).then(resolve);
+                page++;
+                getNextImage(new_href, result, page).then(resolve);
             }
         })
     });
