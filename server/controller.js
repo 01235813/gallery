@@ -4,7 +4,7 @@
 const jsdom = require('jsdom').JSDOM;
 
 const scrapperSvc = require('./service/scrapper.service');
-const makeReq = require('./service/request.service');
+const request = require('./service/request.service');
 
 const config = require('./config').queries;
 
@@ -31,7 +31,7 @@ ctrl.preScrapper = (option, req, res) => new Promise(resolve => {
 
     let helper = (...args) => new Promise(resolve => {
         let processJSON = scrapperSvc[option];
-        makeReq(...args).then(body => processJSON(wrapDOM(body)).then(resolve))
+        request.get(...args).then(body => processJSON(wrapDOM(body)).then(resolve))
     })
 
     let promises = [];
