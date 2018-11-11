@@ -30,26 +30,23 @@ svc.frontPage = (document) => new Promise(resolve => {
 
 svc.articlePage = (document, req) => new Promise((resolve, reject) => {
 
-    let max_pages = parseInt(document.getElementsByClassName('ptb')[0].children[0].lastElementChild.lastElementChild.previousElementSibling.lastElementChild.innerHTML) - 1;
-    if(!max_pages || max_pages < parseInt(req.query.p)) return reject('requested page exceeds max page');
+    let max_pages = parseInt(document.getElementsByClassName('ptb')[0].children[0].lastElementChild.lastElementChild.previousElementSibling.lastElementChild.innerHTML);
+    if(!max_pages || max_pages < parseInt(req.query.p) + 1) return reject('requested page exceeds max page');
 
-    let imagePromises = [];
-    let images = [];
-    let result = [];
-
-    let gallery = {
-        id: req.url.split('/')[3].split('-')[0],
+    let article = {
+        id: req.url.split('/')[2].split('-')[0],
         name: document.getElementById('gn').innerHTML,
     }
 
-    console.log('gallery is: ', gallery);
+    console.log('article is: ', article);
+
     let getImage = (href) => new Promise(async (resolve, reject) => {
         console.log('getting next page: ', href);
         let document = await request.getDOC(href);
         let loadfail = document.getElementById('loadfail').href;
         if((/https?:\/\//).test(loadfail)) document = await request.getDOC(loadfail)
 
-        resolve(galleryPageInterface(document, req.url));
+        resolve(galleryPageInterface(document, href));
     })
 
     let helper = (document) => new Promise((resolve, reject) => {
@@ -58,13 +55,13 @@ svc.articlePage = (document, req) => new Promise((resolve, reject) => {
             await Promise.all(galleries.map(elem => elem.imageDownload)) //downloads the images
             resolve(galleries.map(elem => elem.gallery_result));
         })
-    })
+    });
 
-    helper(document).then(resolve).catch(reject);
+    helper(document).then(result => resolve({ article, images: result})).catch(reject);
 })
 
 let galleryPageInterface = (document, href) => {
-
+    href = href.replace(process.env.ROOT, '');
     let gallery = {
         id: href.split('/')[3].split('-')[0],
         name: document.getElementsByTagName('h1')[0].innerHTML,
@@ -72,8 +69,9 @@ let galleryPageInterface = (document, href) => {
 
     let id = href.split('/')[2];
     let image = document.getElementById('img').src;
-    let page = document.getElementsByClassName('sn')[0].getElementsByTagName('div')[0].getElementsByTagName('span')[1].innerHTML;
-    let ext = image.match(/\.[a-z]{3,4}$/)[0]
+    let max_page = document.getElementsByClassName('sn')[0].getElementsByTagName('div')[0].getElementsByTagName('span')[1].innerHTML;
+    let page = href.split('/')[3].split('-')[1];
+    let ext = image.match(/\.[a-z]{3,4}$/)[0];
 
     let local_image = imageSvc.resolveFileName(gallery.id + '/' + page + '-' + id + ext);
     let imageDownload = imageSvc.downloadImage(image, local_image);

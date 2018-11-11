@@ -2,42 +2,24 @@
 'use strict'
 
 const path = require('path');
-const jsdom = require('jsdom').JSDOM;
 
 const scrapperSvc = require('./service/scrapper.service');
-const request = require('./service/request.service');
+const requestSvc = require('./service/request.service');
 
 const config = require('./config');
 
 
 let ctrl = {};
 
-let wrapDOM = (req) => new jsdom(req).window.document
-
-let genClientHTML = (data) => `
-    <!DOCTYPE html>
-    <html>
-        <head></head>
-        <body> 
-            ${data.map(elem => `<a href=${elem.href}>
-                <img src="${elem.image}" />
-            </a>`).join('\n')} 
-        </body>
-    </html>
-`
-
 ctrl.preScrapper = (option, req, res) => new Promise((resolve, reject) => {
 
     // let queries = { ...config.queries, ...req.query }
     let queries = { ...req.query }
 
-    console.log('req queries: ', req.query)
-
-
     let helper = (...args) => new Promise((resolve, reject) => {
         let processJSON = scrapperSvc[option];
-        request.get(...args).then(body => {
-            processJSON(wrapDOM(body), req).then(resolve).catch(reject)
+        requestSvc.getDOC(...args).then(document => {
+            processJSON(document, req).then(resolve).catch(reject)
         }).catch(reject)
     })
 
@@ -53,8 +35,8 @@ ctrl.preScrapper = (option, req, res) => new Promise((resolve, reject) => {
     }
 
     Promise.all(promises).then(data => {
-        // const responseHTML = genClientHTML([].concat(...data));
-        resolve([].concat(...data));
+        if(data.length == 1) resolve(data[0]);
+        else resolve([].concat(...data));
     }).catch(reject);
 });
 
@@ -64,6 +46,7 @@ ctrl.requester = (option) => (req, res) => {
     req.url = req.url.replace(/^\/api/, ''); //scrubs api route
     console.log('url = ', req.url);
     ctrl.preScrapper(option, req, res).then(data => {
+        console.log('request complete!')
         res.status(200).json(data)
     }).catch(err => {
         res.status(400).send(err);
@@ -72,9 +55,8 @@ ctrl.requester = (option) => (req, res) => {
 
 ctrl.serveHTML = (option) => (req, res) => {
     const DEBUG = req.query.debug;
-    console.log('DEBUG: ', req.query)
     if(DEBUG){
-        request.get(process.env.ROOT + req.url).then(data => {
+        requestSvc.get(process.env.ROOT + req.url).then(data => {
             data = data.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
             res.status(200).send(data);
         })

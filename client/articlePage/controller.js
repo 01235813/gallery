@@ -7,7 +7,7 @@ document.$p = 0;
 let getImages = () => new Promise(async (resolve, reject) => {
     let data = await requestSvc.get(`/api${location.pathname}?p=${document.$p}`);
     document.$p++;
-    concatImageToPage(data);
+    concatImageToPage(data.images);
     resolve(data);
 });
 
