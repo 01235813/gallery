@@ -31,12 +31,20 @@ ctrl.preScrapper = (option, req, res) => new Promise((resolve, reject) => {
 
     let helper = (...args) => new Promise((resolve, reject) => {
         let processJSON = scrapperSvc[option];
-        request.get(...args).then(body => processJSON(wrapDOM(body)).then(resolve).catch(reject))
+        request.get(...args).then(body => {
+            processJSON(wrapDOM(body), req.url).then(resolve).catch(reject)
+        }).catch(reject)
     })
 
     let promises = [];
-    for(let i = 0; i < process.env.PAGES; i++){
-        promises.push(helper(process.env.ROOT + req.url, { page: i, p: i, ...queries }));
+
+    switch(option){
+        case 'frontPage':
+            for(let i = 0; i < process.env.PAGES; i++){
+                promises.push(helper(process.env.ROOT + req.url, { page: i, p: i, ...queries }));
+            }
+        default:
+            promises.push(helper(process.env.ROOT + req.url, { ...queries }));
     }
 
     Promise.all(promises).then(data => {

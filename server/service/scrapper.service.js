@@ -28,48 +28,63 @@ svc.frontPage = (document) => new Promise(resolve => {
     resolve(result);
 })
 
-svc.articlePage = (document) => new Promise((resolve, reject) => {
-    let first_image = document.getElementsByClassName('gdtm')[0].getElementsByTagName('a')[0].href;
+svc.articlePage = (document, href) => new Promise((resolve, reject) => {
+    let imagePromises = [];
+    let images = [];
+    let result = [];
+
     let gallery = {
-        id: first_image.split('.org')[1].split('/')[3].split('-')[0], //a bit messy but can't be bothered to pass the req object to fetch id
+        id: href.split('/')[3].split('-')[0],
         name: document.getElementById('gn').innerHTML,
     }
-    let result = [];
-    let imagePromises = [];
 
-    console.log('first image href is: ', first_image);
-    let getHref = (document) => document.getElementById('next').href;
+    console.log('gallery is: ', gallery);
 
-    let getNextImage = (href, page = 1) => new Promise(async (resolve, reject) => {
+    let getImage = (href) => new Promise(async (resolve, reject) => {
         console.log('getting next page: ', href);
         let document = await request.getDOC(href);
-
         let loadfail = document.getElementById('loadfail').href;
         if((/https?:\/\//).test(loadfail)) document = await request.getDOC(loadfail)
 
-        let id = href.split(process.env.ROOT)[1].split('/')[1]
-        let new_href = getHref(document);
-        let image = document.getElementById('img').src;
-        let ext = image.match(/\.[a-z]{3,4}$/)[0]
+        resolve(galleryPageInterface(document, href));
+    })
 
-        if (href == new_href) resolve(result);
-        else {
-            let local_image = imageSvc.resolveFileName(gallery.id + '/' + page + '-' + id + ext);
-            imagePromises.push(imageSvc.downloadImage(image, local_image))
-            result.push({ image: imageSvc.localToWeb(local_image) });
-            page++;
-            getNextImage(new_href, page).then(resolve).catch(reject);
-        }
-    });
+    let helper = (document) => new Promise((resolve, reject) => {
+        let promises = Array.from(document.getElementsByClassName('gdtm')).map(elem => getImage(elem.getElementsByTagName('a')[0].href));
+        Promise.all(promises).then(async galleries => {
+            await Promise.all(galleries.map(elem => elem.imageDownload)) //downloads the images
+            resolve(galleries.map(elem => elem.gallery_result));
+        })
+    })
 
-    getNextImage(first_image).then(() => {
-        console.log('imagePromises are: ', imagePromises);
-        Promise.all(imagePromises).then(() => resolve(result)).catch(reject);
-    });
+    helper(document).then(resolve).catch(reject);
 })
 
-svc.galleryPage = (document) => new Promise(resolve => {
+let galleryPageInterface = (document, href) => {
 
+    let gallery = {
+        id: href.split('/')[3].split('-')[0],
+        name: document.getElementsByTagName('h1')[0].innerHTML,
+    }
+
+    let id = href.split('/')[2];
+    let image = document.getElementById('img').src;
+    let page = document.getElementsByClassName('sn')[0].getElementsByTagName('div')[0].getElementsByTagName('span')[1].innerHTML;
+    let ext = image.match(/\.[a-z]{3,4}$/)[0]
+
+    let local_image = imageSvc.resolveFileName(gallery.id + '/' + page + '-' + id + ext);
+    let imageDownload = imageSvc.downloadImage(image, local_image);
+
+    // let gallery_result = { image: imageSvc.localToWeb(local_image) }
+    let gallery_result = { image }
+    let result = { imageDownload, gallery_result };
+
+    return result;
+}
+
+svc.galleryPage = (document, href) => new Promise((resolve, reject) => {
+    let gallery = galleryPageInterface(document, href);
+    gallery.imageDownload.then(() => resolve(gallery.result));
 })
 
 
