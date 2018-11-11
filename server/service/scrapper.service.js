@@ -75,9 +75,9 @@ let galleryPageInterface = (document, href) => {
     let local_image = imageSvc.resolveFileName(gallery.id + '/' + page + '-' + id + ext);
     let imageDownload = imageSvc.downloadImage(image, local_image);
 
-    // let gallery_result = { image: imageSvc.localToWeb(local_image) }
+    // let gallery_result = { image: imageSvc.localToWeb(local_image) } // local images not loading in html... need to fix this
     let gallery_result = { image }
-    let result = { imageDownload, gallery_result };
+    let result = { imageDownload, gallery_result }; 
 
     return result;
 }

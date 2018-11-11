@@ -7,7 +7,7 @@ const jsdom = require('jsdom').JSDOM;
 const scrapperSvc = require('./service/scrapper.service');
 const request = require('./service/request.service');
 
-const config = require('./config').queries;
+const config = require('./config');
 
 
 let ctrl = {};
@@ -28,7 +28,11 @@ let genClientHTML = (data) => `
 
 ctrl.preScrapper = (option, req, res) => new Promise((resolve, reject) => {
 
-    let queries = { ...config[option] }
+    // let queries = { ...config.queries, ...req.query }
+    let queries = { ...req.query }
+
+    console.log('req queries: ', req.query)
+
 
     let helper = (...args) => new Promise((resolve, reject) => {
         let processJSON = scrapperSvc[option];
@@ -53,6 +57,8 @@ ctrl.preScrapper = (option, req, res) => new Promise((resolve, reject) => {
         resolve([].concat(...data));
     }).catch(reject);
 });
+
+ctrl.sendEnv = (req, res) => res.status(200).json(config); //not sure if needed
 
 ctrl.requester = (option) => (req, res) => {
     req.url = req.url.replace(/^\/api/, ''); //scrubs api route
