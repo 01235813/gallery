@@ -1,6 +1,7 @@
 
 'use strict'
 
+const path = require('path');
 const jsdom = require('jsdom').JSDOM;
 
 const scrapperSvc = require('./service/scrapper.service');
@@ -48,25 +49,39 @@ ctrl.preScrapper = (option, req, res) => new Promise((resolve, reject) => {
     }
 
     Promise.all(promises).then(data => {
-        const responseHTML = genClientHTML([].concat(...data));
-        resolve(responseHTML);
+        // const responseHTML = genClientHTML([].concat(...data));
+        resolve([].concat(...data));
     }).catch(reject);
 });
 
 ctrl.requester = (option) => (req, res) => {
+    req.url = req.url.replace(/^\/api/, ''); //scrubs api route
+    console.log('url = ', req.url);
+    ctrl.preScrapper(option, req, res).then(data => {
+        res.status(200).send(data)
+    })
+}
 
+ctrl.serveHTML = (option) => (req, res) => {
     const DEBUG = process.env.VIEW == 'html';
-
     if(DEBUG){
         request(process.env.ROOT + req.url).then(data => {
             data = data.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
             res.status(200).send(data);
         })
     } else {
-        console.log('url = ', req.url);
-        ctrl.preScrapper(option, req, res).then(data => {
-            res.status(200).send(data)
-        })
+        let html = '';
+        switch(option){
+            case 'frontPage':
+            case 'articlePage':
+            case 'galleryPage':
+                html = path.join(__dirname + '/../client/' + option + '/index.html');
+                res.status(200).sendFile(html);
+                break;
+            default:
+                res.status(500).send('error');
+                break;
+        }
     }
 }
 
