@@ -27,15 +27,16 @@ svc.downloadImage = (uri, savePath) => new Promise((resolve, reject) => {
         resolve('history')
     } else {
         handleDir(savePath);
-        request.head(uri, function(err, res, body){
-            request(uri).pipe(fs.createWriteStream(savePath))
+        request(uri)
+            .on('error', err => {
+                console.error('err downloading image: ', err);
+                reject(err);
+            })
+            .pipe(fs.createWriteStream(savePath))
                 .on('close', () => {
                     console.log('done: ', savePath);
                     resolve('saved');
                 })
-                .on('error', reject);
-        });
-        
     }
 });
 
