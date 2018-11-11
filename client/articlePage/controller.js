@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await getImages();
 
     window.addEventListener('scroll', async () => {
-        if ( !document.$loadingGalleryFlag && window.innerHeight + window.scrollY > document.body.scrollHeight - 2000 ) {
+        if ( !document.$loadingGalleryFlag && window.innerHeight + window.scrollY > document.body.scrollHeight - 4000 ) {
             document.$loadingGalleryFlag = true;
             console.log('loading another page!')
             await getImages()
