@@ -37,7 +37,7 @@ ctrl.preScrapper = (option, req, res) => new Promise((resolve, reject) => {
     let helper = (...args) => new Promise((resolve, reject) => {
         let processJSON = scrapperSvc[option];
         request.get(...args).then(body => {
-            processJSON(wrapDOM(body), req.url).then(resolve).catch(reject)
+            processJSON(wrapDOM(body), req).then(resolve).catch(reject)
         }).catch(reject)
     })
 
@@ -64,14 +64,17 @@ ctrl.requester = (option) => (req, res) => {
     req.url = req.url.replace(/^\/api/, ''); //scrubs api route
     console.log('url = ', req.url);
     ctrl.preScrapper(option, req, res).then(data => {
-        res.status(200).send(data)
+        res.status(200).json(data)
+    }).catch(err => {
+        res.status(400).send(err);
     })
 }
 
 ctrl.serveHTML = (option) => (req, res) => {
-    const DEBUG = process.env.VIEW == 'html';
+    const DEBUG = req.query.debug;
+    console.log('DEBUG: ', req.query)
     if(DEBUG){
-        request(process.env.ROOT + req.url).then(data => {
+        request.get(process.env.ROOT + req.url).then(data => {
             data = data.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
             res.status(200).send(data);
         })
