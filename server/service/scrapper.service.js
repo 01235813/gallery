@@ -28,10 +28,18 @@ svc.frontPage = (document) => new Promise(resolve => {
     resolve(result);
 })
 
-svc.articlePage = (document, req) => new Promise((resolve, reject) => {
+svc.articlePage = (document, req) => new Promise(async (resolve, reject) => {
 
     let max_pages = parseInt(document.getElementsByClassName('ptb')[0].children[0].lastElementChild.lastElementChild.previousElementSibling.lastElementChild.innerHTML);
     if(!max_pages || max_pages < parseInt(req.query.p) + 1) return reject('requested page exceeds max page');
+
+    try {
+        let latest = document.getElementById('gnd') && document.getElementById('gnd').lastElementChild.previousElementSibling.href;
+        console.log('redirecting to latest page...')
+        if(latest) document = await request.getDOC(latest);
+    } catch(err) {
+        console.log('already on latest page!')
+    }
 
     let article = {
         id: req.url.split('/')[2].split('-')[0],

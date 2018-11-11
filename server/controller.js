@@ -13,8 +13,8 @@ let ctrl = {};
 
 ctrl.preScrapper = (option, req, res) => new Promise((resolve, reject) => {
 
-    // let queries = { ...config.queries, ...req.query }
-    let queries = { ...req.query }
+    let queries = { ...config[option].queries, ...req.query }
+    // let queries = { ...req.query }
 
     let helper = (...args) => new Promise((resolve, reject) => {
         let processJSON = scrapperSvc[option];

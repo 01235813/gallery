@@ -2,6 +2,9 @@
 
 const request = require('request');
 const jsdom = require('jsdom').JSDOM;
+
+const headers = require('../config').headers;
+
 // request.debug = true;
 
 let svc = {};
@@ -11,7 +14,11 @@ svc.get = (url, queries={}) => new Promise((resolve, reject) => {
         throw new Error('env.URL is not a string');
     }
 
-    let requestObj = { url, qs: queries };
+    let requestObj = { 
+        url, 
+        qs: queries, 
+        headers
+    };
     request.get(requestObj, (err, response, body) => {
         if(err) {
             console.error(err);
