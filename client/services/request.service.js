@@ -28,4 +28,5 @@ const requestSvc = (() => {
     svc.delete  = (url) => svc.makeReq("DELETE", url);
     
     return svc;
+
 })()
