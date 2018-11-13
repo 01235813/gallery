@@ -6,14 +6,16 @@ const request = require('request');
 
 let svc = {};
 
+let escapeRegExp = (s) => s.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
+
 let handleDir = (filename) => {
     let directory = filename.match(/.*\//)[0];
     directory.split('/').map((elem, i) => {
-        if(i == 0) return;
-        if(typeof elem == 'number') elem = String.valueOf(elem);
-        let dir2 = directory.match(new RegExp('.*' + elem))[0];
-        if (!fs.existsSync(dir2)){
-            fs.mkdirSync(dir2);
+        if(elem){
+            let dir2 = directory.match(new RegExp('.*' + escapeRegExp(elem)))[0];
+            if (!fs.existsSync(dir2)){
+                fs.mkdirSync(dir2);
+            }
         }
     })
 }

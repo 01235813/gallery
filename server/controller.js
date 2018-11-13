@@ -46,7 +46,7 @@ ctrl.requester = (option) => (req, res) => {
     req.url = req.url.replace(/^\/api/, ''); //scrubs api route
     console.log('url = ', req.url);
     ctrl.preScrapper(option, req, res).then(data => {
-        console.log('request complete!')
+        console.log('\n\nrequest complete!\n\n')
         res.status(200).json(data)
     }).catch(err => {
         res.status(400).send(err);

@@ -23,15 +23,16 @@ const requestSvc = (() => {
     })
     
     svc.makeReq = (method, url, aggressive = false) => new Promise((resolve, reject) => {
+        console.log('making request at: ', url);
         if(!aggressive) makeReqInterface(method, url).then(resolve).catch(reject);
         else {
-            let helper = (method, url, timeout=12000) => new Promise((resolve, reject) => {
+            let helper = (method, url, timeout=20000) => new Promise((resolve, reject) => {
                 //after 2 minutes, connection will reject
                 if(timeout > 2 * 360000){
                     console.error("could not establish connection... operation will now be halted.");
-                    reject('could not establish connection...')
+                    reject('could not establish connection...');
                 }
-                let myPromise = new Promise((resolve, reject) => {
+                new Promise((resolve, reject) => {
                     let FLAG = true;
                     let timer = setTimeout(() => {
                         if(FLAG){
@@ -41,9 +42,12 @@ const requestSvc = (() => {
                     }, timeout);
 
                     makeReqInterface(method, url).then(result => {
-                        console.log('connection was successful!');
-                        clearTimeout(timer);
-                        resolve(result);
+                        if(FLAG){
+                            FLAG = false;
+                            console.log('connection was successful!');
+                            clearTimeout(timer);
+                            resolve(result);
+                        }
                     }).catch(err => {
                         if(FLAG){
                             FLAG = false;

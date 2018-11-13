@@ -30,28 +30,32 @@ svc.frontPage = (document) => new Promise(resolve => {
 
 svc.articlePage = (document, req) => new Promise(async (resolve, reject) => {
 
-    let max_pages = parseInt(document.getElementsByClassName('ptb')[0].children[0].lastElementChild.lastElementChild.previousElementSibling.lastElementChild.innerHTML);
-    if(!max_pages || max_pages < parseInt(req.query.p) + 1) return reject('requested page exceeds max page');
-
     try {
         let latest = document.getElementById('gnd') && document.getElementById('gnd').lastElementChild.previousElementSibling.href;
-        console.log('redirecting to latest page...')
-        if(latest) document = await request.getDOC(latest);
+        if(latest) {
+            console.log('redirecting to latest page...')
+            document = await request.getDOC(latest);
+        }
     } catch(err) {
-        console.log('already on latest page!')
+        console.log('on latest page!')
     }
+
+    let current_page = parseInt(req.query.p) + 1;
 
     let article = {
         id: req.url.split('/')[2].split('-')[0],
         name: document.getElementById('gn').innerHTML,
+        max_pages: parseInt(document.getElementsByClassName('ptb')[0].children[0].lastElementChild.lastElementChild.previousElementSibling.lastElementChild.innerHTML),
+        max_items: parseInt(document.getElementsByClassName('gpc')[0].innerHTML.match(/\d+/g)[2]),
     }
+    
+    if(!article.max_pages || article.max_pages < current_page) return reject('requested page exceeds max page');
 
-    console.log('article is: ', article);
+    console.log('article is: ', article, '\n');
 
     let getImage = (href) => new Promise(async (resolve, reject) => {
         let document = await request.getDOC(href);
-        let loadfail = document.getElementById('loadfail').href;
-        if((/https?:\/\//).test(loadfail)) document = await request.getDOC(loadfail);        
+
         console.log('getting next page: ', href);
 
         resolve(galleryPageInterface(document, href));
@@ -81,7 +85,7 @@ let galleryPageInterface = (document, href) => {
     let page = href.split('/')[3].split('-')[1];
     let ext = image.match(/\.[a-z]{3,4}$/)[0];
 
-    let local_image = imageSvc.resolveFileName(`${gallery.id}-${gallery.name}/${page}-${id}${ext}`);
+    let local_image = imageSvc.resolveFileName(`${gallery.id}-${gallery.name.replace(/[^a-zA-Z0-9\[\] ]/g, '')}/${page}-${id}${ext}`);
     let imageDownload = imageSvc.downloadImage(image, local_image).catch(console.error);
 
     // let gallery_result = { image: imageSvc.localToWeb(local_image) } // local images not loading in html... need to fix this
