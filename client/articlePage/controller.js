@@ -8,14 +8,14 @@
     document.$p = 0;
 
     let getImages = () => new Promise(async (resolve, reject) => {
-        let data = await requestSvc.get(`/api${location.pathname}?p=${document.$p}`);
+        let data = await requestSvc.get(`/api${location.pathname}?p=${document.$p}`, true); // enable aggressive connection
         document.$p++;
         concatImageToPage(data.images);
         resolve(data);
     });
 
     let concatImageToPage = (data) => {
-        document.getElementById('app').innerHTML = document.getElementById('app').innerHTML.concat(`${data.map(elem => `<img src=${elem.image} />`)}`);
+        document.getElementById('images').innerHTML = document.getElementById('images').innerHTML.concat(`${data.map(elem => `<img src=${elem.image} />`)}`);
     }
 
     document.$loadingGalleryFlag = false;

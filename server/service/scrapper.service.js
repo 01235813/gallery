@@ -49,10 +49,10 @@ svc.articlePage = (document, req) => new Promise(async (resolve, reject) => {
     console.log('article is: ', article);
 
     let getImage = (href) => new Promise(async (resolve, reject) => {
-        console.log('getting next page: ', href);
         let document = await request.getDOC(href);
         let loadfail = document.getElementById('loadfail').href;
-        if((/https?:\/\//).test(loadfail)) document = await request.getDOC(loadfail)
+        if((/https?:\/\//).test(loadfail)) document = await request.getDOC(loadfail);        
+        console.log('getting next page: ', href);
 
         resolve(galleryPageInterface(document, href));
     })
@@ -81,7 +81,7 @@ let galleryPageInterface = (document, href) => {
     let page = href.split('/')[3].split('-')[1];
     let ext = image.match(/\.[a-z]{3,4}$/)[0];
 
-    let local_image = imageSvc.resolveFileName(gallery.id + '/' + page + '-' + id + ext);
+    let local_image = imageSvc.resolveFileName(`${gallery.id}-${gallery.name}/${page}-${id}${ext}`);
     let imageDownload = imageSvc.downloadImage(image, local_image).catch(console.error);
 
     // let gallery_result = { image: imageSvc.localToWeb(local_image) } // local images not loading in html... need to fix this

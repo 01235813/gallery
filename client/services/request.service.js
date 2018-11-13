@@ -3,7 +3,7 @@
 const requestSvc = (() => {
     let svc = {};
 
-    svc.makeReq = (method, url) => new Promise((resolve, reject) => {
+    let makeReqInterface = (method, url) => new Promise((resolve, reject) => {
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function() {
             if (xmlhttp.readyState == 4 && xmlhttp.status >= 200 && xmlhttp.status < 400) {
@@ -21,11 +21,53 @@ const requestSvc = (() => {
         xmlhttp.open(method, url, true);
         xmlhttp.send();
     })
+    
+    svc.makeReq = (method, url, aggressive = false) => new Promise((resolve, reject) => {
+        if(!aggressive) makeReqInterface(method, url).then(resolve).catch(reject);
+        else {
+            let helper = (method, url, timeout=12000) => new Promise((resolve, reject) => {
+                //after 2 minutes, connection will reject
+                if(timeout > 2 * 360000){
+                    console.error("could not establish connection... operation will now be halted.");
+                    reject('could not establish connection...')
+                }
+                let myPromise = new Promise((resolve, reject) => {
+                    let FLAG = true;
+                    let timer = setTimeout(() => {
+                        if(FLAG){
+                            FLAG = false;
+                            reject(`connection timedout after ${timeout / 1000} seconds...`)
+                        }
+                    }, timeout);
 
-    svc.get     = (url) => svc.makeReq("GET", url);
-    svc.put     = (url) => svc.makeReq("PUT", url);
-    svc.post    = (url) => svc.makeReq("POST", url);
-    svc.delete  = (url) => svc.makeReq("DELETE", url);
+                    makeReqInterface(method, url).then(result => {
+                        console.log('connection was successful!');
+                        clearTimeout(timer);
+                        resolve(result);
+                    }).catch(err => {
+                        if(FLAG){
+                            FLAG = false;
+                            reject(err);
+                        }
+                    })
+                }).then(resolve).catch(err => {
+                    console.error("connection failed to complete...");
+                    console.error(err);
+                    setTimeout(() => {
+                        timeout *= 1.5;
+                        console.error("retrying now...")
+                        helper(method, url, timeout).then(resolve);
+                    }, 2000)
+                })
+            })
+            helper(method, url).then(resolve)
+        }
+    })
+
+    svc.get     = (...args) => svc.makeReq("GET", ...args);
+    svc.put     = (...args) => svc.makeReq("PUT", ...args,);
+    svc.post    = (...args) => svc.makeReq("POST", ...args);
+    svc.delete  = (...args) => svc.makeReq("DELETE", ...args);
     
     return svc;
 
