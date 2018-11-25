@@ -26,7 +26,7 @@ const requestSvc = (() => {
         console.log('making request at: ', url);
         if(!aggressive) makeReqInterface(method, url).then(resolve).catch(reject);
         else {
-            let helper = (method, url, timeout=20000) => new Promise((resolve, reject) => {
+            let helper = (method, url, timeout=40000) => new Promise((resolve, reject) => {
                 //after 2 minutes, connection will reject
                 if(timeout > 2 * 360000){
                     console.error("could not establish connection... operation will now be halted.");

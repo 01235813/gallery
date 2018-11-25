@@ -15,7 +15,15 @@
     });
 
     let concatImageToPage = (data) => {
-        document.getElementById('images').innerHTML = document.getElementById('images').innerHTML.concat(`${data.map(elem => `<img src=${elem.image} />`)}`);
+        let targetElement = document.getElementById('images');
+        
+        data
+            .map(elem => {
+                let result = document.createElement('img');
+                result.src = elem.image;
+                return result;
+            })
+            .map(elem => targetElement.appendChild(elem));
     }
 
     document.$loadingGalleryFlag = false;

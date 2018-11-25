@@ -85,19 +85,20 @@ let galleryPageInterface = (document, href) => {
     let page = href.split('/')[3].split('-')[1];
     let ext = image.match(/\.[a-z]{3,4}$/)[0];
 
-    let local_image = imageSvc.resolveFileName(`${gallery.id}-${gallery.name.replace(/[^a-zA-Z0-9\[\] ]/g, '')}/${page}-${id}${ext}`);
-    let imageDownload = imageSvc.downloadImage(image, local_image).catch(console.error);
+    // let local_image = imageSvc.resolveFileName(`${gallery.id}-${gallery.name.replace(/[^a-zA-Z0-9\[\] ]/g, '')}/${page}-${id}${ext}`);
+    // let imageDownload = imageSvc.downloadImage(image, local_image).catch(console.error);
 
-    // let gallery_result = { image: imageSvc.localToWeb(local_image) } // local images not loading in html... need to fix this
+    // let gallery_result = { image: imageSvc.localToWeb(local_image) }
+
     let gallery_result = { image }
-    let result = { imageDownload, gallery_result }; 
+    let result = { gallery_result }; 
 
     return result;
 }
 
 svc.galleryPage = (document, req) => new Promise((resolve, reject) => {
     let gallery = galleryPageInterface(document, req.url);
-    gallery.imageDownload.then(() => resolve(gallery.result));
+    resolve(gallery.result);
 })
 
 module.exports = svc;
