@@ -8,13 +8,13 @@ const controller = require('./controller');
 module.exports = (app) => {
 
     //client routes
-    app.get('/', controller.serveHTML('frontPage'));
+    app.get('/frontpage', controller.serveHTML('frontPage'));
     app.get('/g/*', controller.serveHTML('articlePage'));
     app.get('/s/*', controller.serveHTML('galleryPage'));
  
     //api routes
     app.get('/environment', controller.sendEnv); //not sure if needed
-    app.get('/api/', controller.requester('frontPage'));
+    app.get('/api/front/*', controller.requester('frontPage'));
     app.get('/api/g/*', controller.requester('articlePage'));
     app.get('/api/s/*', controller.requester('galleryPage'));
 

@@ -41,10 +41,23 @@ svc.articlePage = (document, req) => new Promise(async (resolve, reject) => {
     }
 
     let current_page = parseInt(req.query.p) + 1;
+    
+    let tags = [].concat.apply(
+        [], 
+        Array.from(document.getElementById('taglist').children[0].children[0].children)
+            .map(row => Array.from(row.children[1].children)
+                .map(col => col.id)
+            )
+    )
+
+    let artist = tags.find(elem => (/artist/g).test(elem))
+    artist = artist ? artist.replace(/.*artist\:/, '') : '';
 
     let article = {
         id: req.url.split('/')[2].split('-')[0],
         name: document.getElementById('gn').innerHTML,
+        artist,
+        tags,
         max_pages: parseInt(document.getElementsByClassName('ptb')[0].children[0].lastElementChild.lastElementChild.previousElementSibling.lastElementChild.innerHTML),
         max_items: parseInt(document.getElementsByClassName('gpc')[0].innerHTML.match(/\d+/g)[2]),
     }

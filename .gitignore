@@ -3,3 +3,4 @@ public
 .env
 server/config.json
 server/config.js
+.gitconfig
