@@ -9,6 +9,7 @@ module.exports = (app) => {
 
     //client routes
     app.get('/frontpage', controller.serveHTML('frontPage'));
+    app.get('/alphapage', controller.serveHTML('alphaPage'))
     app.get('/g/*', controller.serveHTML('articlePage'));
     app.get('/s/*', controller.serveHTML('galleryPage'));
  
@@ -17,6 +18,7 @@ module.exports = (app) => {
     app.get('/api/front/*', controller.requester('frontPage'));
     app.get('/api/g/*', controller.requester('articlePage'));
     app.get('/api/s/*', controller.requester('galleryPage'));
+    app.get('/api/avideo', controller.avideo);
 
     //static resources
     app.use('/client', express.static('client'));

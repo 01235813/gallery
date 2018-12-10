@@ -66,6 +66,7 @@ ctrl.serveHTML = (option) => (req, res) => {
             case 'frontPage':
             case 'articlePage':
             case 'galleryPage':
+            case 'alphaPage':
                 html = path.join(__dirname + '/../client/' + option + '/index.html');
                 res.status(200).sendFile(html);
                 break;
@@ -76,5 +77,25 @@ ctrl.serveHTML = (option) => (req, res) => {
     }
 }
 
+
+
+ctrl.avideo = (req, res) => {
+    requestSvc.getDOC(process.env.AROOT).then(doc => {
+        Promise.all(
+            Array.from(doc.querySelectorAll('a[itemprop=url]'))
+                .map(elem => elem.href)
+                .map(href => new Promise(resolve => (
+                    requestSvc.getDOC(href)
+                        .then(doc => {
+                            // console.log('fetching video from: ', href);
+                            resolve(doc.getElementsByTagName('video')[0].lastChild.src)
+                        })
+                )))
+        ).then(videos => {
+            console.log('results: ', videos);
+            res.status(200).json({ videos });
+        })
+    })
+};
 
 module.exports = ctrl;
