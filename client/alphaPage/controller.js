@@ -21,7 +21,14 @@
         data
             .map(elem => {
                 let result = document.createElement('video');
-                result.src = elem;
+                result.autoplay = true;
+                result.controls = true;
+                result.width="400";
+                let source = document.createElement('source');
+                source.src = elem.match(/.*(?=\/\?.*$)/)[0]
+                // source.src = elem;
+                source.type = `video/${elem.match(/[a-z\d]{3}(?=\/\?.*$)/)}`
+                result.appendChild(source);
                 return result;
             })
             .map(elem => targetElement.appendChild(elem));

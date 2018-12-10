@@ -84,6 +84,7 @@ ctrl.avideo = (req, res) => {
         Promise.all(
             Array.from(doc.querySelectorAll('a[itemprop=url]'))
                 .map(elem => elem.href)
+                .splice(0, 16)
                 .map(href => new Promise(resolve => (
                     requestSvc.getDOC(href)
                         .then(doc => {

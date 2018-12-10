@@ -9,7 +9,7 @@ module.exports = (app) => {
 
     //client routes
     app.get('/frontpage', controller.serveHTML('frontPage'));
-    app.get('/alphapage', controller.serveHTML('alphaPage'))
+    app.get('/avideo', controller.serveHTML('alphaPage'))
     app.get('/g/*', controller.serveHTML('articlePage'));
     app.get('/s/*', controller.serveHTML('galleryPage'));
  
