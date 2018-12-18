@@ -41,14 +41,19 @@ svc.articlePage = (document, req) => new Promise(async (resolve, reject) => {
     }
 
     let current_page = parseInt(req.query.p) + 1;
+    let tags = [];
     
-    let tags = [].concat.apply(
-        [], 
-        Array.from(document.getElementById('taglist').children[0].children[0].children)
-            .map(row => Array.from(row.children[1].children)
-                .map(col => col.id)
-            )
-    )
+    try {
+        tags = [].concat.apply(
+            [], 
+            Array.from(document.getElementById('taglist').children[0].children[0].children)
+                .map(row => Array.from(row.children[1].children)
+                    .map(col => col.id)
+                )
+        )
+    } catch(err){
+        console.warn("there were no tags found for this library");
+    }
 
     let artist = tags.find(elem => (/artist/g).test(elem))
     artist = artist ? artist.replace(/.*artist\:/, '') : '';
