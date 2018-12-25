@@ -8,6 +8,11 @@ let svc = {};
 
 svc.frontPage = (document) => new Promise(resolve => {
 
+    if(document.body.innerHTML.search("This gallery has been removed or is unavailable.")) {
+        console.warn('gallery has been removed and is no longer available');
+        resolve({});
+    }
+
     let result = [];
 
     Array.from(document.getElementsByClassName('itd')).forEach((elem, i) => {
