@@ -13,11 +13,12 @@ let ctrl = {};
 
 ctrl.preScrapper = (option, req, res) => new Promise((resolve, reject) => {
 
-    let queries = { ...config[option].queries, ...req.query }
+    const queries = { ...config[option].queries, ...req.query }
     // let queries = { ...req.query }
 
-    let helper = (...args) => new Promise((resolve, reject) => {
-        let processJSON = scrapperSvc[option];
+    const processJSON = scrapperSvc[option];
+
+    const helper = (...args) => new Promise((resolve, reject) => {
         requestSvc.getDOC(...args).then(document => {
             processJSON(document, req).then(resolve).catch(reject)
         }).catch(reject)
@@ -27,11 +28,9 @@ ctrl.preScrapper = (option, req, res) => new Promise((resolve, reject) => {
 
     switch(option){
         case 'frontPage':
-            for(let i = 0; i < process.env.PAGES; i++){
-                promises.push(helper(process.env.ROOT + req.url, { page: i, p: i, ...queries }));
-            }
+            promises.push(helper(process.env.ROOT, queries));
         default:
-            promises.push(helper(process.env.ROOT + req.url, { ...queries }));
+            promises.push(helper(process.env.ROOT + req.url, {}));
     }
 
     Promise.all(promises).then(data => {

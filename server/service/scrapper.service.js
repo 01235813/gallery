@@ -7,24 +7,65 @@ const imageSvc = require('./image.service');
 let svc = {};
 
 svc.frontPage = (document) => new Promise(resolve => {
+    console.log('hit!')
 
-    let result = [];
+    const getRating = (elem) => {
+        const data = elem.style['background-position'].replace('px', '');
+        const x = parseInt(data.split(' ')[0]);
+        const y = parseInt(data.split(' ')[1]);
 
-    Array.from(document.getElementsByClassName('itd')).forEach((elem, i) => {
-        if (
-            typeof elem.getElementsByClassName('it2')[0] !== 'undefined' &&
-            typeof elem.getElementsByClassName('it5')[0] !== 'undefined'
-        ) {
-            let image_div = elem.getElementsByClassName('it2')[0];
-            let key = image_div.innerHTML.split('~', 4);
-            let proto = key[0] == 'init' ? 'http' : 'https';
+        let result = 5 - Math.round(Math.abs(x) / 16, 0);
+        if(y < -10) result -= 0.5;
+        
+        return result;
+    }
 
-            result.push({
-                image: `${proto}://${key[1]}/${key[2]}`,
-                href: elem.getElementsByClassName('it5')[0].children[0].href
-            })
+    // console.log('document: ', Array.from(document.getElementsByClassName('id1')));
+
+    let result = Array.from(document.getElementsByClassName('id1')).map((elem, i) => {
+
+        const elem_title = elem.getElementsByClassName('id2')[0]
+        const elem_image = elem.getElementsByClassName('id3')[0]
+        const elem_subtitle = elem.getElementsByClassName('id4')[0]
+
+        let result_obj = {};
+
+        // elem_title
+        try {
+            result_obj = { 
+                ...result_obj,
+                title: elem_title.children[0].innerHTML,
+                href: elem_title.children[0].href,
+            }
+        } catch(err) {
+            console.error('elem_title is not available, please reconfigure...\nERROR: ', err);
         }
+        
+        // cccccc
+        try {
+            result_obj = { 
+                ...result_obj,
+                image: elem_image.children[0].children[0].src,
+            }
+        } catch(err) {
+            console.error('elem_image is not available, please reconfigure...\nERROR: ', err);
+        }
+        
+        // elem_subtitle
+        try {
+            result_obj = { 
+                ...result_obj,
+                type: elem_subtitle.children[0].title,
+                count: parseInt(elem_subtitle.children[1].innerHTML.replace(/[^\d]/g, '')),
+                rating: getRating(elem_subtitle.children[2]),
+            }
+        } catch(err) {
+            console.error('elem_subtitle is not available, please reconfigure...\nERROR: ', err);
+        }
+
+        return result_obj;
     });
+
     resolve(result);
 })
 
