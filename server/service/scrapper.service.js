@@ -8,11 +8,6 @@ let svc = {};
 
 svc.frontPage = (document) => new Promise(resolve => {
 
-    if(document.body.innerHTML.search("This gallery has been removed or is unavailable.")) {
-        console.warn('gallery has been removed and is no longer available');
-        resolve({});
-    }
-
     let result = [];
 
     Array.from(document.getElementsByClassName('itd')).forEach((elem, i) => {
@@ -34,6 +29,10 @@ svc.frontPage = (document) => new Promise(resolve => {
 })
 
 svc.articlePage = (document, req) => new Promise(async (resolve, reject) => {
+    if(document.body.innerHTML.search("This gallery has been removed or is unavailable.") > -1) {
+        console.warn('gallery has been removed and is no longer available');
+        resolve({});
+    }
 
     try {
         let latest = document.getElementById('gnd') && document.getElementById('gnd').lastElementChild.previousElementSibling.href;

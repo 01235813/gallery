@@ -53,13 +53,18 @@ ctrl.requester = (option) => (req, res) => {
     })
 }
 
+ctrl.serveDebug = (req, res) => {
+    const url = req.url.replace(/^\/debug/, '');
+    requestSvc.get(process.env.ROOT + url).then(data => {
+        data = data.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+        res.status(200).send(data);
+    })
+}
+
 ctrl.serveHTML = (option) => (req, res) => {
     const DEBUG = req.query.debug;
     if(DEBUG){
-        requestSvc.get(process.env.ROOT + req.url).then(data => {
-            data = data.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-            res.status(200).send(data);
-        })
+        ctrl.serveDebug(req, res);
     } else {
         let html = '';
         switch(option){
@@ -76,8 +81,6 @@ ctrl.serveHTML = (option) => (req, res) => {
         }
     }
 }
-
-
 
 ctrl.avideo = (req, res) => {
     requestSvc.getDOC(process.env.AROOT).then(doc => {

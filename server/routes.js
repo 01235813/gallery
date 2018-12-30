@@ -15,10 +15,12 @@ module.exports = (app) => {
  
     //api routes
     app.get('/environment', controller.sendEnv); //not sure if needed
-    app.get('/api/front/*', controller.requester('frontPage'));
+    app.get('/api/frontpage/', controller.requester('frontPage'));
     app.get('/api/g/*', controller.requester('articlePage'));
     app.get('/api/s/*', controller.requester('galleryPage'));
     app.get('/api/avideo', controller.avideo);
+
+    app.get('/debug', controller.serveDebug);
 
     //static resources
     app.use('/client', express.static('client'));
