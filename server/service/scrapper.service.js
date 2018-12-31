@@ -1,4 +1,3 @@
-
 'use strict'
 
 const request = require('./request.service');
@@ -15,8 +14,8 @@ svc.frontPage = (document) => new Promise(resolve => {
         const y = parseInt(data.split(' ')[1]);
 
         let result = 5 - Math.round(Math.abs(x) / 16, 0);
-        if(y < -10) result -= 0.5;
-        
+        if (y < -10) result -= 0.5;
+
         return result;
     }
 
@@ -32,34 +31,34 @@ svc.frontPage = (document) => new Promise(resolve => {
 
         // elem_title
         try {
-            result_obj = { 
+            result_obj = {
                 ...result_obj,
                 title: elem_title.children[0].innerHTML,
                 href: elem_title.children[0].href,
             }
-        } catch(err) {
+        } catch (err) {
             console.error('elem_title is not available, please reconfigure...\nERROR: ', err);
         }
-        
+
         // cccccc
         try {
-            result_obj = { 
+            result_obj = {
                 ...result_obj,
                 image: elem_image.children[0].children[0].src,
             }
-        } catch(err) {
+        } catch (err) {
             console.error('elem_image is not available, please reconfigure...\nERROR: ', err);
         }
-        
+
         // elem_subtitle
         try {
-            result_obj = { 
+            result_obj = {
                 ...result_obj,
                 type: elem_subtitle.children[0].title,
                 count: parseInt(elem_subtitle.children[1].innerHTML.replace(/[^\d]/g, '')),
                 rating: getRating(elem_subtitle.children[2]),
             }
-        } catch(err) {
+        } catch (err) {
             console.error('elem_subtitle is not available, please reconfigure...\nERROR: ', err);
         }
 
@@ -70,33 +69,33 @@ svc.frontPage = (document) => new Promise(resolve => {
 })
 
 svc.articlePage = (document, req) => new Promise(async (resolve, reject) => {
-    if(document.body.innerHTML.search("This gallery has been removed or is unavailable.") > -1) {
+    if (document.body.innerHTML.search("This gallery has been removed or is unavailable.") > -1) {
         console.warn('gallery has been removed and is no longer available');
         resolve({});
     }
 
     try {
         let latest = document.getElementById('gnd') && document.getElementById('gnd').lastElementChild.previousElementSibling.href;
-        if(latest) {
+        if (latest) {
             console.log('redirecting to latest page...')
-            document = await request.getDOC(latest);
+            document = await request.getDOC(latest, req.query);
         }
-    } catch(err) {
+    } catch (err) {
         console.log('on latest page!')
     }
 
     let current_page = parseInt(req.query.p) + 1;
     let tags = [];
-    
+
     try {
         tags = [].concat.apply(
-            [], 
+            [],
             Array.from(document.getElementById('taglist').children[0].children[0].children)
-                .map(row => Array.from(row.children[1].children)
-                    .map(col => col.id)
-                )
+            .map(row => Array.from(row.children[1].children)
+                .map(col => col.id)
+            )
         )
-    } catch(err){
+    } catch (err) {
         console.warn("there were no tags found for this library");
     }
 
@@ -111,8 +110,8 @@ svc.articlePage = (document, req) => new Promise(async (resolve, reject) => {
         max_pages: parseInt(document.getElementsByClassName('ptb')[0].children[0].lastElementChild.lastElementChild.previousElementSibling.lastElementChild.innerHTML),
         max_items: parseInt(document.getElementsByClassName('gpc')[0].innerHTML.match(/\d+/g)[2]),
     }
-    
-    if(!article.max_pages || article.max_pages < current_page) return reject('requested page exceeds max page');
+
+    if (!article.max_pages || article.max_pages < current_page) return reject('requested page exceeds max page');
 
     console.log('article is: ', article, '\n');
 
@@ -132,7 +131,10 @@ svc.articlePage = (document, req) => new Promise(async (resolve, reject) => {
         })
     });
 
-    helper(document).then(result => resolve({ article, images: result})).catch(reject);
+    helper(document).then(result => resolve({
+        article,
+        images: result
+    })).catch(reject);
 })
 
 let galleryPageInterface = (document, href) => {
@@ -153,8 +155,12 @@ let galleryPageInterface = (document, href) => {
 
     // let gallery_result = { image: imageSvc.localToWeb(local_image) }
 
-    let gallery_result = { image }
-    let result = { gallery_result }; 
+    let gallery_result = {
+        image
+    }
+    let result = {
+        gallery_result
+    };
 
     return result;
 }

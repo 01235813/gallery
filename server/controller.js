@@ -1,4 +1,3 @@
-
 'use strict'
 
 const path = require('path');
@@ -13,7 +12,6 @@ let ctrl = {};
 
 ctrl.preScrapper = (option, req, res) => new Promise((resolve, reject) => {
 
-    const queries = { ...config[option].queries, ...req.query }
     // let queries = { ...req.query }
 
     const processJSON = scrapperSvc[option];
@@ -25,16 +23,20 @@ ctrl.preScrapper = (option, req, res) => new Promise((resolve, reject) => {
     })
 
     let promises = [];
+    req.url = req.url.split('?')[0] || req.url;
 
-    switch(option){
+    switch (option) {
         case 'frontPage':
-            promises.push(helper(process.env.ROOT, queries));
+            req.query = { ...config[option].queries,
+                ...req.query
+            }
+            promises.push(helper(process.env.ROOT, req.query));
         default:
-            promises.push(helper(process.env.ROOT + req.url, {}));
+            promises.push(helper(process.env.ROOT + req.url, req.query));
     }
 
     Promise.all(promises).then(data => {
-        if(data.length == 1) resolve(data[0]);
+        if (data.length == 1) resolve(data[0]);
         else resolve([].concat(...data));
     }).catch(reject);
 });
@@ -62,11 +64,11 @@ ctrl.serveDebug = (req, res) => {
 
 ctrl.serveHTML = (option) => (req, res) => {
     const DEBUG = req.query.debug;
-    if(DEBUG){
+    if (DEBUG) {
         ctrl.serveDebug(req, res);
     } else {
         let html = '';
-        switch(option){
+        switch (option) {
             case 'frontPage':
             case 'articlePage':
             case 'galleryPage':
@@ -85,18 +87,20 @@ ctrl.avideo = (req, res) => {
     requestSvc.getDOC(process.env.AROOT).then(doc => {
         Promise.all(
             Array.from(doc.querySelectorAll('a[itemprop=url]'))
-                .map(elem => elem.href)
-                .splice(0, 16)
-                .map(href => new Promise(resolve => (
-                    requestSvc.getDOC(href)
-                        .then(doc => {
-                            // console.log('fetching video from: ', href);
-                            resolve(doc.getElementsByTagName('video')[0].lastChild.src)
-                        })
-                )))
+            .map(elem => elem.href)
+            .splice(0, 16)
+            .map(href => new Promise(resolve => (
+                requestSvc.getDOC(href)
+                .then(doc => {
+                    // console.log('fetching video from: ', href);
+                    resolve(doc.getElementsByTagName('video')[0].lastChild.src)
+                })
+            )))
         ).then(videos => {
             console.log('results: ', videos);
-            res.status(200).json({ videos });
+            res.status(200).json({
+                videos
+            });
         })
     })
 };

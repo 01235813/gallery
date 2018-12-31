@@ -9,18 +9,18 @@ const headers = require('../config').headers;
 
 let svc = {};
 
-svc.get = (url, queries={}) => new Promise((resolve, reject) => {
-    if(typeof url !== 'string'){
+svc.get = (url, queries = {}) => new Promise((resolve, reject) => {
+    if (typeof url !== 'string') {
         throw new Error('env.URL is not a string');
     }
 
-    let requestObj = { 
-        url, 
-        qs: queries, 
+    let requestObj = {
+        url,
+        qs: queries,
         headers
     };
     request.get(requestObj, (err, response, body) => {
-        if(err) {
+        if (err) {
             console.error(err);
             reject(err);
         } else {
@@ -29,9 +29,9 @@ svc.get = (url, queries={}) => new Promise((resolve, reject) => {
     })
 })
 
-svc.getDOC = (url, queries={}) => new Promise((resolve, reject) => {
+svc.getDOC = (url, queries = {}) => {
     let wrapDOM = (req) => new jsdom(req).window.document
-    svc.get(url, queries).then(body => wrapDOM(body)).then(resolve).catch(reject);
-})
+    return svc.get(url, queries).then(body => wrapDOM(body));
+}
 
 module.exports = svc;
