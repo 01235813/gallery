@@ -3,7 +3,7 @@
 // const requestSvc => requester service
 // const scrollSvc => scroll service
 
-const $ctrl = ((document, window) => {
+const $ctrl = (() => {
 
     let $ctrl = {};
 
@@ -72,4 +72,4 @@ const $ctrl = ((document, window) => {
 
     return $ctrl;
 
-})(document, window);
+})();
