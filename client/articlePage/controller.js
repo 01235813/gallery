@@ -3,16 +3,23 @@
 // const requestSvc => requester service
 // const scrollSvc => scroll service
 
-(() => {
+const $ctrl = ((document, window) => {
 
-    document.$p = 0;
+    let $ctrl = {};
 
-    let images = [];
+    $ctrl.$p = 0;
+    $ctrl.images = [];
+
+    $ctrl.debugMode = () => {
+        window.location = window.location = '?debug=1';
+    }
+
+
 
     const getImages = () => new Promise(async (resolve, reject) => {
-        let data = await requestSvc.get(`/api${location.pathname}?p=${document.$p}`, true); // enable aggressive connection
-        document.$p++;
-        images = images.concat(data.images);
+        let data = await requestSvc.get(`/api${location.pathname}?p=${$ctrl.$p}`, true); // enable aggressive connection
+        $ctrl.$p++;
+        $ctrl.images = $ctrl.images.concat(data.images);
         resolve(data);
     });
 
@@ -30,24 +37,24 @@
 
     const processImages = () => new Promise(resolve => {
         getImages().then(data => {
-            images = images.concat(data.images);
-            console.log('images are: ', images);
+            $ctrl.images = $ctrl.images.concat(data.images);
+            console.log('images are: ', $ctrl.images);
             concatImageToPage(data.images);
             resolve(data);
         })
     })
 
     const handleScrollImages = async () => {
-        if (!document.$loadingGalleryFlag && window.innerHeight + window.scrollY > document.body.scrollHeight - 10000) {
-            document.$loadingGalleryFlag = true;
+        if (!$ctrl.$loadingGalleryFlag && window.innerHeight + window.scrollY > document.body.scrollHeight - 10000) {
+            $ctrl.$loadingGalleryFlag = true;
             console.log('loading another page!')
             await processImages();
 
-            document.$loadingGalleryFlag = false;
+            $ctrl.$loadingGalleryFlag = false;
         }
     }
 
-    document.$loadingGalleryFlag = false;
+    $ctrl.$loadingGalleryFlag = false;
 
     document.addEventListener("DOMContentLoaded", async () => {
 
@@ -63,4 +70,6 @@
     // requestSvc.get('https://jsonplaceholder.typicode.com/posts').then(console.log) // test
 
 
-})();
+    return $ctrl;
+
+})(document, window);

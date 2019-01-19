@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
             background-color: black;
             color: white;
         }
+
         img {
             max-height: 1000px;
             max-width: 2000px;
@@ -18,11 +20,15 @@
 
     <title>Article Page</title>
 </head>
+
 <body>
     <div id="app">
         <h1 id="title"></h1>
-        <a id="artist_link"><h2 id="artist"></h2></a>
+        <a id="artist_link">
+            <h2 id="artist"></h2>
+        </a>
         <div id="details"></div>
+        <button id="debugMode" onClick="$ctrl.debugMode()">Debug Mode</button>
         <button id="download_all">Download all images</button>
         <button id="bookmark_page">Bookmark Page</button>
         <button id="load_all_images">Load all images</button>
@@ -33,4 +39,5 @@
     <script src="/client/services/request.service.js"></script>
     <script src="/client/articlePage/controller.js"></script>
 </body>
+
 </html>
